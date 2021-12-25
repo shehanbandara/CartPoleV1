@@ -56,7 +56,7 @@ class Agent:
         # Exploration rate
         self.epsilon = 1.0
 
-        # Agent will at least explore this amount
+        # Minimum epsilon
         self.epsilonMin = 0.001
 
         # Decrease the number of explorations as the agent gets better at the game
@@ -65,12 +65,26 @@ class Agent:
         # How much memory the DQN will use to learn
         self.batchSize = 64
 
-        #
-        self.trainStart = 1000
+        # Minimum size of memory to start training
+        self.minMemory = 1000
 
         # Initialize the model
         self.model = Model(input_shape=(self.stateSize,),
                            action_space=self.actionSize)
 
     def remember(self, state, action, reward, nextState, gameOver):
+
+        # If memory is exceeded, popleft()
+        self.memory.append((state, action, reward, nextState, gameOver))
+
+        # If memory is greater than the minimum size of memory to start training
+        if len(self.memory) > self.minMemory:
+
+            # If epsilon is greater than the minimum epsilon
+            if self.epsilon > self.epsilonMin:
+
+                # Decay epsilon
+                self.epsilon *= self.epsilonDecay
+
+    def reply(self):
         pass
