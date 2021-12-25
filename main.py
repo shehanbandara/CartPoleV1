@@ -87,4 +87,42 @@ class Agent:
                 self.epsilon *= self.epsilonDecay
 
     def reply(self):
-        pass
+
+        # If memory is less than the minimum size of memory to start training
+        if len(self.memory) < self.minMemory:
+            return
+
+        # Sample a random batch from memory or all of memory
+        batch = random.sample(self.memory, min(
+            len(self.memory), self.batchSize))
+
+        # Initialize state, action, reward, nextState, and gameOver lists
+        state = np.zeros((self.batchSize, self.stateSize))
+        action = []
+        reward = []
+        nextState = np.zeros((self.batchSize, self.stateSize))
+        gameOver = []
+
+        # Store each entry of the batch in the lists
+        for i in range(self.batchSize):
+            state[i] = batch[i][0]
+            action.append(batch[i][1])
+            reward.append(batch[i][2])
+            nextState[i] = batch[i][3]
+            gameOver.append(batch[i][4])
+
+        # Predict
+        target = self.model.predict(state)
+        nextTarget = self.model.predict(nextState)
+
+        for i in range(self.batchSize):
+
+            # Q value for the action
+            if gameOver[i]:
+                target[i][action[i]] = reward[i]
+            else:
+                target[i][action[i]] = reward[i] + \
+                    self.gamma * (np.amax(nextTarget[i]))
+
+        # Train
+        self.model.fit(state, target, batch_size=self.batchSize, verbose=0)
