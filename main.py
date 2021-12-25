@@ -8,7 +8,7 @@ from keras.models import Model
 from keras.optimizers import Adam, RMSprop
 
 
-def model(inputShape, actionSpace):
+def Model(inputShape, actionSpace):
     xInput = Input(inputShape)
 
     # Input layer
@@ -31,3 +31,46 @@ def model(inputShape, actionSpace):
     model.summary()
 
     return model
+
+
+class Agent:
+
+    def __init__(self):
+
+        # Use the OpenAI Gym CartPole-v1 environment
+        self.environment = gym.make("CartPole-v1")
+
+        # Get the state and action size
+        self.stateSize = self.env.observation_space.shape[0]
+        self.actionSize = self.env.action_space.n
+
+        # Number of episodes the agent will play
+        self.EPISODES = 1000
+
+        # If memory is exceeded, popleft()
+        self.memory = deque(maxlen=2000)
+
+        # Discount rate
+        self.gamma = 0.95
+
+        # Exploration rate
+        self.epsilon = 1.0
+
+        # Agent will at least explore this amount
+        self.epsilonMin = 0.001
+
+        # Decrease the number of explorations as the agent gets better at the game
+        self.epsilonDecay = 0.999
+
+        # How much memory the DQN will use to learn
+        self.batchSize = 64
+
+        #
+        self.trainStart = 1000
+
+        # Initialize the model
+        self.model = Model(input_shape=(self.stateSize,),
+                           action_space=self.actionSize)
+
+    def remember(self, state, action, reward, nextState, gameOver):
+        pass
