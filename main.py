@@ -4,7 +4,7 @@ import random
 import numpy as np
 from collections import deque
 from keras.layers import Dense, Input
-from keras.models import Model
+from keras.models import Model, load_model
 from tensorflow.keras.optimizers import RMSprop
 
 
@@ -200,7 +200,47 @@ class Agent:
                 # Else replay the game
                 self.replay()
 
+    def test(self):
+
+        # Load the trained model
+        self.model = load_model("CartPole-V1.h5")
+
+        # Loop through every episode the agent will play
+        for i in range(self.EPISODES):
+
+            # Reset the state and gameOver
+            state = self.environment.reset()
+            state = np.reshape(state, [1, self.stateSize])
+            gameOver = False
+
+            # Initialize a counter
+            count = 0
+
+            # While the game is not over
+            while not gameOver:
+
+                # Display the environment
+                self.environment.render()
+
+                # Predicted action to take
+                action = np.argmax(self.model.predict(state))
+
+                # Pull nextState, reward, gameOver from the action
+                nextState, reward, gameOver, _ = self.environment.step(action)
+                state = np.reshape(nextState, [1, self.stateSize])
+
+                # Increment the counter
+                count += 1
+
+                # If the game is over print the game statistics
+                if gameOver:
+                    print("Episode: {}/{}, Score: {}".format(i, self.EPISODES, count))
+                    break
+
 
 if __name__ == "__main__":
     agent = Agent()
-    agent.train()
+
+    # agent.train()
+
+    agent.test()
