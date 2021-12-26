@@ -126,3 +126,76 @@ class Agent:
 
         # Train
         self.model.fit(state, target, batch_size=self.batchSize, verbose=0)
+
+    def train(self):
+
+        # Loop through every episode the agent will play
+        for i in range(self.EPISODES):
+
+            # Reset the state and gameOver
+            state = self.environment.reset()
+            state = np.reshape(state, [1, self.stateSize])
+            gameOver = False
+
+            # Initialize a counter
+            count = 0
+
+            # While the game is not over
+            while not gameOver:
+
+                # Display the environment
+                self.environment.render()
+
+                # If a random float between 0 and 1 is less than or equal to epsilon
+                if np.random.random() <= self.epsilon:
+
+                    # Perform a random action
+                    action = random.randrange(self.actionSize)
+
+                # If a random float between 0 and 1 is greater than epsilon
+                else:
+
+                    # Perform the predicted action
+                    action = np.argmax(self.model.predict(state))
+
+                # Pull nextState, reward, gameOver from the action
+                nextState, reward, gameOver, _ = self.environment.step(action)
+                nextState = np.reshape(nextState, [1, self.stateSize])
+
+                # If the game is not over
+                if not gameOver or count == self.environment._max_episode_steps - 1:
+
+                    # Keep the reward as is
+                    reward = reward
+
+                # If the game is over
+                else:
+
+                    # Change the reward to -100
+                    reward = -100
+
+                # remember the game iteration
+                self.remember(state, action, reward, nextState, gameOver)
+
+                # Set the state as the next state
+                state = nextState
+
+                # Increment the counter
+                count += 1
+
+                # If the game is over print the game statistics
+                if gameOver:
+                    print("Episode: {}/{}, Score: {}, Epsilon: {:.2}".format(i,
+                                                                             self.EPISODES, count, self.epsilon))
+
+                    # If maximum score
+                    if count == 500:
+
+                        # Save the model
+                        print("Saving trained model as CartPole-V1.h5")
+                        self.model.save("CartPole-V1.h5")
+
+                        return
+
+                # Else replay the game
+                self.replay()
