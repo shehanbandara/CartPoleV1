@@ -5,10 +5,10 @@ import numpy as np
 from collections import deque
 from keras.layers import Dense, Input
 from keras.models import Model
-from keras.optimizers import Adam, RMSprop
+from tensorflow.keras.optimizers import RMSprop
 
 
-def Model(inputShape, actionSpace):
+def DQNModel(inputShape, actionSpace):
     xInput = Input(inputShape)
 
     # Input layer
@@ -41,8 +41,8 @@ class Agent:
         self.environment = gym.make("CartPole-v1")
 
         # Get the state and action size
-        self.stateSize = self.env.observation_space.shape[0]
-        self.actionSize = self.env.action_space.n
+        self.stateSize = self.environment.observation_space.shape[0]
+        self.actionSize = self.environment.action_space.n
 
         # Number of episodes the agent will play
         self.EPISODES = 1000
@@ -69,8 +69,8 @@ class Agent:
         self.minMemory = 1000
 
         # Initialize the model
-        self.model = Model(input_shape=(self.stateSize,),
-                           action_space=self.actionSize)
+        self.model = DQNModel(inputShape=(self.stateSize,),
+                              actionSpace=self.actionSize)
 
     def remember(self, state, action, reward, nextState, gameOver):
 
@@ -86,7 +86,7 @@ class Agent:
                 # Decay epsilon
                 self.epsilon *= self.epsilonDecay
 
-    def reply(self):
+    def replay(self):
 
         # If memory is less than the minimum size of memory to start training
         if len(self.memory) < self.minMemory:
@@ -199,3 +199,8 @@ class Agent:
 
                 # Else replay the game
                 self.replay()
+
+
+if __name__ == "__main__":
+    agent = Agent()
+    agent.train()
